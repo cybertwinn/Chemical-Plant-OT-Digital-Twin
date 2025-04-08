@@ -150,22 +150,21 @@ Each PLC script periodically:
 - `Functional_attacks/`  
   Contains various Python scripts to demonstrate ICS cyberattacks on the CIP-based communications:
   - `mitm_icmp_prompt_ephemeral.py` (MITM Attack with ARP Spoofing and NetfilterQueue Redirection):
-     - Goal: Intercept and forward CIP packets between PLCs and the HMI while remaining undetected.
-     - Method: Uses ARP spoofing to trick devices into sending traffic through the attacker. The attacker then applies NetfilterQueue to inspect or modify CIP messages on-the-fly, leveraging ICMP redirect rules to maintain routing.
-     - Impact: Enables the attacker to observe (or alter) process variables and operator commands in real-time, potentially causing deceptive displays on the HMI or masked sensor readings.
+     - Implements ARP spoofing and NAT so that the attacker sits between any two devices (e.g., a PLC and the HMI).
+     - The script enables IP forwarding, drops ICMP (ping) packets to hide the intrusion, and redirects ENIP/CIP traffic via NetfilterQueue.
+     - This position allows the attacker to observe or further manipulate control commands and sensor data in real time.
        
   - `mitm_netfilter_queue_prompt.py` (Payload Manipulation with NetfilterQueue):
-     - Goal: Illustrate how the attacker can modify CIP payload data directly in transit.
-     - Method: Hooks into NetfilterQueue within a Man-in-the-Middle (MITM) setup to intercept EtherNet/IP frames, parse CIP commands, and rewrite key fields (e.g., forcing valve states, falsifying sensor readings).
-     - Impact: Allows on-the-fly manipulation of control commands, letting the attacker stealthily alter process behavior while maintaining seemingly valid traffic flows.
+     - Intercepts and modifies CIP packets using NetfilterQueue.
+     - With real-time monitoring of traffic, the script can replace valve commands (open/close), spoof HMI dial readings, or overwrite sensor values in-flight.
+     - This demonstrates how ENIP/CIP’s lack of authentication can be exploited to forge or alter critical ICS data unseen by operators.
        
   - `cip_injection_prompt.py` (CIP Injection Attack Spoofing the HMI):
-     - Goal: Send malicious CIP commands to PLCs by impersonating the legitimate HMI.
-     - Method: Crafts CIP Write or Read requests (using tools like Scapy) that mimic the HMI’s IP and ports, bypassing authentication (which CIP lacks).
-     - Impact: The attacker can change valve states, override safety thresholds, or feed phony sensor values to PLC memory, potentially jeopardizing plant safety and reliability.
+     - Spoofs the HMI by crafting and sending entirely new ENIP/CIP commands to PLCs without relying on existing traffic.
+     - The script repeatedly injects open/close requests—or other forged instructions—while masquerading as a trusted source (the real HMI).
+     - By scheduling commands at user-defined intervals, an attacker can continuously override the legitimate process state.
        
   - `dos_prompt.py` (DoS Attack with ARP Spoofing and CIP Packet Dropping):
-     - Goal: Disrupt critical ICS communications to cause delays, errors, or complete system unavailability.
-     - Method: Floods ARP tables and selectively drops CIP packets via NetfilterQueue, overwhelming PLC/HMI connections or causing them to time out.
-     - Impact: Prevents operators from issuing commands or reading sensor data, possibly leading to hazardous physical conditions if the control system cannot respond to process changes.
-  
+     - Combines ARP spoofing with selective CIP packet dropping to block communication between critical ICS components.
+     - Once the attacker is in the path (via ARP spoof), they discard ENIP/CIP traffic in NetfilterQueue rather than forwarding it.
+     - This quickly disrupts operator visibility and device responsiveness, although it is more easily detected than stealthier MITM or injection attacks.
