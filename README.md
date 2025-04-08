@@ -157,11 +157,10 @@ Each PLC script periodically:
   - `mitm_netfilter_queue_prompt.py` (Payload Manipulation with NetfilterQueue):
      - Intercepts and modifies CIP packets using NetfilterQueue.
      - With real-time monitoring of traffic, the script can replace valve commands (open/close), spoof HMI dial readings, or overwrite sensor values in-flight.
-     - This demonstrates how ENIP/CIP’s lack of authentication can be exploited to forge or alter critical ICS data unseen by operators.
        
   - `cip_injection_prompt.py` (CIP Injection Attack Spoofing the HMI):
      - Spoofs the HMI by crafting and sending entirely new ENIP/CIP commands to PLCs without relying on existing traffic.
-     - The script repeatedly injects open/close requests—or other forged instructions—while masquerading as a trusted source (the real HMI).
+     - The script repeatedly injects open/close requests while masquerading as a trusted source (the real HMI).
      - By scheduling commands at user-defined intervals, an attacker can continuously override the legitimate process state.
        
   - `dos_prompt.py` (DoS Attack with ARP Spoofing and CIP Packet Dropping):
